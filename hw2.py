@@ -38,6 +38,7 @@ def bel(belief_bar):
     bel = bel * n
     return bel
 
+
 belief_bar_0 = 0.25 * np.ones(4)
 belief_0 = belief_bar_0
 
@@ -47,4 +48,7 @@ belief_1 = bel(belief_bar_1)
 belief_bar_2 = bel_bar(belief_bar_1)
 belief_2 = bel(belief_bar_2)
 
-print(belief_2)
+print("Bar Belief 1: ", belief_bar_1)
+print("Belief 1: ", belief_1)
+print("Bar Belief 2: ", belief_bar_2)
+print("Belief 2: ", belief_2)
