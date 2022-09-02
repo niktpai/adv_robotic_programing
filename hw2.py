@@ -55,3 +55,23 @@ print("Bar Belief 1: ", belief_bar_1)
 print("Belief 1: ", belief_1)
 print("Bar Belief 2: ", belief_bar_2)
 print("Belief 2: ", belief_2)
+
+Hallway = ['P0','P1','P2','P3']
+
+plt.figure(1)
+plt.bar(Hallway, belief_0)
+plt.title('Step 1')
+plt.xlabel('Belief')
+plt.show()
+
+plt.figure(2)
+plt.bar(Hallway, belief_1)
+plt.title('Step 2')
+plt.xlabel('Belief')
+plt.show()
+
+plt.figure(3)
+plt.bar(Hallway, belief_2)
+plt.title('Step 3')
+plt.xlabel('Belief')
+plt.show()
