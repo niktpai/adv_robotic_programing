@@ -1,34 +1,88 @@
 import cv2
 import numpy as np
 
-vidcap = cv2.VideoCapture('BookScene.MOV', )
+# Part K - Feature Matching Sift model
+
+# number of features to match
+MIN_MATCH_COUNT = 10
+vidcap = cv2.VideoCapture('BookScene.MOV')
+
+
+
+# open template
+templateT = cv2.imread('Book 4.png', cv2.IMREAD_COLOR)
+
+# if no image return
+if templateT is None:
+    print('Query Image Does Not Exist')
+    exit()
 
 while True:
-    ret, frame = vidcap.read()
-    #cv2.imshow('frame', frame)
+    ret, img = vidcap.read()
+    # Show Images
+    cv2.imshow("object", templateT)
+    cv2.imshow("scene image", img)
 
-    hsvBlue = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+    key = cv2.waitKey(0)
 
-    lower_blue = np.array([10, 10, 10])
-    upper_blue = np.array([344, 150, 150])
+    # detect the feature, SIFT detector, Scale-Invariant Feature Transform
+    sift = cv2.SIFT_create()
 
-    mask = cv2.inRange(hsvBlue, lower_blue, upper_blue)
+    # find the keypoints and descriptors with SIFT
+    kp1, des1 = sift.detectAndCompute(templateT, None)
+    kp2, des2 = sift.detectAndCompute(img, None)
 
-    res = cv2.bitwise_and(frame, frame, mask=mask)
+    # Algorithm Selection
+    FLANN_INDEX_KDTREE = 1
+    # get index parameters as dictionary
+    index_params = dict(algorithm=FLANN_INDEX_KDTREE, trees=5)
+    # get search parameters
+    search_params = dict(checks=50)
+    # Use flann based matcher
+    flann = cv2.FlannBasedMatcher(index_params, search_params)
+    # get KNN matches for K value of 2
+    matches = flann.knnMatch(des1, des2, k=2)
+    # store all the good matches as per Lowe's ratio test.
+    good = []
+    for m, n in matches:
+        if m.distance < 0.7 * n.distance:
+            good.append(m)
 
-    contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-    for cnt in contours:
-        # Calculate area and remove small elements
-        area = cv2.contourArea(cnt)
-        if area > 100000:
-            cv2.drawContours(frame, [cnt], -1, (0, 255, 0), 2)
-            #cv2.rectangle(frame, )
+    if len(good) > MIN_MATCH_COUNT:
+        # Get source and destination points and reshape array
+        src_pts = np.float32([kp1[m.queryIdx].pt for m in good]).reshape(-1, 1, 2)
+        dst_pts = np.float32([kp2[m.trainIdx].pt for m in good]).reshape(-1, 1, 2)
+        # find homography on source/destination points
+        M, mask = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC, 5.0)
 
-    cv2.imshow('frame', frame)
-    cv2.imshow('mask', mask)
+        # matched mast to list
+        matchesMask = mask.ravel().tolist()
+        # get height width and depth
+        h, w, d = templateT.shape
 
-    if cv2.waitKey(20) == ord('q'):
-        break
+        # reshape points array to match height width
+        pts = np.float32([[0, 0], [0, h - 1], [w - 1, h - 1], [w - 1, 0]]).reshape(-1, 1, 2)
 
-vidcap.release()
+        dst = cv2.perspectiveTransform(pts, M)
+        # draw lines and set color
+        img_polylines = cv2.polylines(img, [np.int32(dst)], True, 255, 3, cv2.LINE_AA)
+
+        # show polylines
+        cv2.imshow("matching image", img_polylines)
+
+        # draw matches in green color
+        draw_params = dict(matchColor=(0, 255, 0),
+                           singlePointColor=None,
+                           matchesMask=matchesMask,  # draw only inliers
+                           flags=2)
+
+        # Get Matched Image using drawMatches
+        img_matched = cv2.drawMatches(templateT, kp1, img, kp2, good, None, **draw_params)
+        # display matched features
+        cv2.imshow("Matched Feature Items", img_matched)
+        # pause windows until close
+
+        if cv2.waitKey(20) == ord('q'):
+            break
+
 cv2.destroyAllWindows()
