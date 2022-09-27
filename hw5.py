@@ -1,3 +1,9 @@
+"""
+MTRE 6100: ASSIGNMENT 5
+Authors: Nikhil Pai, Devin Grace
+"""
+
+
 import numpy as np
 import matplotlib.pyplot as plt
 
