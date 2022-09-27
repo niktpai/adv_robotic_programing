@@ -112,14 +112,19 @@ class robotBase():
             else:
                 print("Input character not recognized!! Try again please.")
 
+class robot2(robotBase):
+    def __init__(self):
+        super().__init__()
+
+        self.transitionProbs(0.6, 0.2, 0.2) 
+        self.sensorProbs(0.15, 0.85, 0.6, 0.4)
+
 def main():
     robby_1 = robotBase()
     print("Controlling robot 1")
     robby_1.play()
     
     robby_2 = robotBase()
-    robby_2.transitionProbs(0.6,0.2,0.2)
-    robby_2.sensorProbs(0.6,0.4,0.85,0.15)
     print("Controlling robot 2")
     robby_2.play()
 
