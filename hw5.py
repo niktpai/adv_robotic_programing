@@ -1,6 +1,6 @@
 """
 MTRE 6100: ASSIGNMENT 5
-Authors: Nikhil Pai, Devin Grace
+Authors:  Devin Grace, Nikhil Pai
 """
 
 
